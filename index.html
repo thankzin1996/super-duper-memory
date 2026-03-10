@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="my">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Media Studio v4</title>
+  <style>
+    :root{
+      --bg:#0f172a;
+      --panel:#111827;
+      --card:#ffffff;
+      --soft:#f8fafc;
+      --text:#0f172a;
+      --muted:#64748b;
+      --primary:#6d5efc;
+      --primary2:#8b5cf6;
+      --danger:#dc2626;
+      --success:#16a34a;
+      --shadow:0 12px 30px rgba(15, 23, 42, .12);
+      --radius:22px;
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0;font-family:Arial,Helvetica,sans-serif;background:linear-gradient(180deg,#eef2ff 0%,#f8fafc 100%);color:var(--text)}
+    body{min-height:100vh}
+    .screen{display:none;min-height:100vh}
+    .screen.active{display:block}
+    .container{max-width:980px;margin:0 auto;padding:18px}
+    .topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 0}
+    .brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:20px}
+    .brand-badge{width:40px;height:40px;border-radius:14px;background:linear-gradient(135deg,var(--primary),var(--primary2));display:grid;place-items:center;color:#fff;font-size:20px;box-shadow:var(--shadow)}
+    .pill-btn,.ghost-btn,.primary-btn,.secondary-btn,.danger-btn{border:none;border-radius:999px;padding:12px 16px;font-size:14px;font-weight:700;cursor:pointer}
+    .primary-btn{background:linear-gradient(135deg,var(--primary),var(--primary2));color:#fff}
+    .secondary-btn{background:#e2e8f0;color:#0f172a}
+    .ghost-btn{background:#fff;color:#0f172a;box-shadow:var(--shadow)}
+    .pill-btn{background:#fff;color:#0f172a;box-shadow:var(--shadow)}
+    .danger-btn{background:var(--danger);color:#fff}
+    .hero-card,.panel,.tool-card,.stat-card{background:rgba(255,255,255,.92);backdrop-filter:blur(6px);border-radius:var(--radius);box-shadow:var(--shadow)}
+    .hero-card{padding:22px;margin-top:10px}
+    .hero-title{font-size:32px;line-height:1.15;margin:0 0 8px;font-weight:800}
+    .hero-text{font-size:15px;color:var(--muted);line-height:1.7;margin:0}
+    .hero-actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:18px}
+    .api-box{margin-top:18px;padding:16px;border-radius:18px;background:#eef2ff}
+    .label{font-size:13px;font-weight:700;margin-bottom:8px;display:block}
+    input,textarea,select{width:100%;padding:14px 14px;border-radius:16px;border:1px solid #dbe2ea;background:#fff;font-size:15px;outline:none}
+    textarea{min-height:140px;resize:vertical;line-height:1.55}
+    .row{display:grid;grid-template-columns:1fr;gap:12px}
+    .actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
+    .status{margin-top:12px;padding:12px 14px;border-radius:16px;font-size:14px;line-height:1.55;background:#eef2ff;color:#312e81}
+    .status.success{background:#ecfdf5;color:#166534}
+    .status.error{background:#fef2f2;color:#991b1b}
+    .section-title{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:16px 0 14px}
+    .section-title h2{margin:0;font-size:24px}
+    .menu-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:16px 0}
+    .menu-pill{background:#fff;border-radius:20px;padding:14px 10px;text-align:center;box-shadow:var(--shadow);cursor:pointer;font-size:13px;font-weight:700}
+    .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+    .tool-card{padding:18px;cursor:pointer;position:relative;overflow:hidden}
+    .tool-card:hover{transform:translateY(-2px)}
+    .tool-card .badge{display:inline-block;background:#eef2ff;color:#4338ca;border-radius:999px;padding:5px 9px;font-size:11px;font-weight:700;margin-bottom:10px}
+    .tool-icon{font-size:28px;margin-bottom:10px}
+    .tool-title{font-size:18px;font-weight:800;margin:0 0 6px}
+    .tool-desc{font-size:13px;color:var(--muted);line-height:1.5;margin:0}
+    .tool-arrow{position:absolute;right:14px;bottom:14px;font-size:22px;color:#94a3b8}
+    .screen-header{display:flex;align-items:center;gap:10px;margin:4px 0 16px}
+    .screen-header .title-wrap{flex:1}
+    .screen-header h2{margin:0;font-size:24px}
+    .screen-header p{margin:4px 0 0;color:var(--muted);font-size:13px}
+    .panel{padding:18px}
+    .output{margin-top:14px;padding:16px;border-radius:18px;background:#0f172a;color:#e2e8f0;white-space:pre-wrap;line-height:1.65;min-height:150px}
+    .split{display:grid;grid-template-columns:1fr;gap:14px}
+    .audio-wrap{margin-top:14px;padding:14px;border-radius:18px;background:#eef2ff}
+    audio{width:100%;margin-top:8px}
+    .small{font-size:12px;color:var(--muted);line-height:1.5}
+    .footer-space{height:32px}
+    @media (max-width:700px){
+      .hero-title{font-size:28px}
+      .menu-strip{grid-template-columns:repeat(2,1fr)}
+      .grid{grid-template-columns:1fr 1fr}
+    }
+    @media (max-width:430px){
+      .grid{grid-template-columns:1fr}
+      .hero-title{font-size:25px}
+    }
+  </style>
+</head>
+<body>
+  <!-- Home -->
+  <section id="homeScreen" class="screen active">
+    <div class="container">
+      <div class="topbar">
+        <div class="brand"><div class="brand-badge">🎬</div>AI Media Studio</div>
+        <button class="pill-btn" onclick="showScreen('toolsScreen')">Tools</button>
+      </div>
+
+      <div class="hero-card">
+        <h1 class="hero-title">Translate, Script, Voice, Video Recap — အကုန်တစ်နေရာတည်း</h1>
+        <p class="hero-text">Gemini API key ထည့်ပြီး Start Now နှိပ်လိုက်တာနဲ့ Tools ထဲကိုတန်းဝင်နိုင်အောင် ပြင်ထားတဲ့ merged version ပါ။ Tool တစ်ခုချင်းစီက အောက်မှာမပေါ်တော့ဘဲ နောက်မျက်နှာပြင်တစ်ခုစီသီးသန့်ပွင့်မယ်။</p>
+
+        <div class="api-box">
+          <label class="label" for="apiKeyInput">Gemini API Key</label>
+          <input id="apiKeyInput" type="password" placeholder="Gemini API key ထည့်ပါ" />
+          <div class="actions">
+            <button class="primary-btn" onclick="saveApiKey()">Save API Key</button>
+            <button class="secondary-btn" onclick="startNow()">Start Now</button>
+            <button class="ghost-btn" onclick="testAPI()">Test API</button>
+          </div>
+          <div id="homeStatus" class="status">API key ထည့်ပြီး Start Now နှိပ်ပါ။</div>
+        </div>
+      </div>
+      <div class="footer-space"></div>
+    </div>
+  </section>
+
+  <!-- Tools Dashboard -->
+  <section id="toolsScreen" class="screen">
+    <div class="container">
+      <div class="topbar">
+        <div class="brand"><div class="brand-badge">🧰</div>Tools Dashboard</div>
+        <button class="pill-btn" onclick="showScreen('homeScreen')">Home</button>
+      </div>
+
+      <div class="menu-strip">
+        <div class="menu-pill" onclick="openTool('translateScreen')">🌐 Translate</div>
+        <div class="menu-pill" onclick="openTool('scriptScreen')">✍️ Script</div>
+        <div class="menu-pill" onclick="openTool('voiceScreen')">🔊 Voice</div>
+        <div class="menu-pill" onclick="openTool('recapScreen')">🎬 Recap</div>
+      </div>
+
+      <div class="section-title">
+        <h2>အသုံးပြုနိုင်တဲ့ Tools</h2>
+      </div>
+
+      <div class="grid">
+        <div class="tool-card" onclick="openTool('translateScreen')">
+          <div class="badge">FREE</div>
+          <div class="tool-icon">🌐</div>
+          <h3 class="tool-title">Translate</h3>
+          <p class="tool-desc">English script ကို မြန်မာလိုဘာသာပြန်</p>
+          <div class="tool-arrow">›</div>
+        </div>
+
+        <div class="tool-card" onclick="openTool('scriptScreen')">
+          <div class="badge">FREE</div>
+          <div class="tool-icon">✍️</div>
+          <h3 class="tool-title">Script Writer</h3>
+          <p class="tool-desc">အကြောင်းအရာရေးလိုက်တာနဲ့ script ထုတ်ပေးမယ်</p>
+          <div class="tool-arrow">›</div>
+        </div>
+
+        <div class="tool-card" onclick="openTool('voiceScreen')">
+          <div class="badge">AI</div>
+          <div class="tool-icon">🔊</div>
+          <h3 class="tool-title">Gemini Voice</h3>
+          <p class="tool-desc">မြန်မာစာကို AI voice နဲ့ audio ဖိုင်ထုတ်မယ်</p>
+          <div class="tool-arrow">›</div>
+        </div>
+
+        <div class="tool-card" onclick="openTool('recapScreen')">
+          <div class="badge">FREE</div>
+          <div class="tool-icon">🎬</div>
+          <h3 class="tool-title">Video Recap</h3>
+          <p class="tool-desc">Transcript paste လုပ်ပြီး recap + translation ထုတ်</p>
+          <div class="tool-arrow">›</div>
+        </div>
+
+        <div class="tool-card" onclick="openTool('subtitleScreen')">
+          <div class="badge">BETA</div>
+          <div class="tool-icon">📄</div>
+          <h3 class="tool-title">Subtitle Generator</h3>
+          <p class="tool-desc">Transcript ကနေ .srt subtitle generate</p>
+          <div class="tool-arrow">›</div>
+        </div>
+
+        <div class="tool-card" onclick="openTool('youtubeScreen')">
+          <div class="badge">BETA</div>
+          <div class="tool-icon">▶️</div>
+          <h3 class="tool-title">YouTube Helper</h3>
+          <p class="tool-desc">Link + transcript paste လုပ်ပြီး translate / recap</p>
+          <div class="tool-arrow">›</div>
+        </div>
+      </div>
+      <div class="footer-space"></div>
+    </div>
+  </section>
+
+  <!-- Translate -->
+  <section id="translateScreen" class="screen">
+    <div class="container">
+      <div class="screen-header">
+        <button class="pill-btn" onclick="goBack()">← Back</button>
+        <div class="title-wrap">
+          <h2>Translate Tool</h2>
+          <p>English script ကို မြန်မာလိုဘာသာပြန်မယ်</p>
+        </div>
+      </div>
+      <div class="panel">
+        <label class="label">English Text</label>
+        <textarea id="translateInput" placeholder="English script ထည့်ပါ"></textarea>
+        <div class="actions">
+          <button class="primary-btn" onclick="translateText()">Translate Now</button>
+          <button class="secondary-btn" onclick="copyOutput('translateOutput')">Copy Result</button>
+          <button class="ghost-btn" onclick="downloadText('translate_output.txt', getText('translateOutput'))">Download TXT</button>
+        </div>
+        <div id="translateStatus" class="status">စာထည့်ပြီး Translate Now နှိပ်ပါ။</div>
+        <div id="translateOutput" class="output">Result ဒီမှာပေါ်မယ်...</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Script -->
+  <section id="scriptScreen" class="screen">
+    <div class="container">
+      <div class="screen-header">
+        <button class="pill-btn" onclick="goBack()">← Back</button>
+        <div class="title-wrap">
+          <h2>Script Writer</h2>
+          <p>Topic တစ်ခုထည့်ပြီး short video script ရေးပေးမယ်</p>
+        </div>
+      </div>
+      <div class="panel">
+        <label class="label">Topic</label>
+        <input id="scriptTopic" placeholder="ဥပမာ - Titanic movie recap" />
+        <div class="row" style="margin-top:12px;grid-template-columns:1fr 1fr;">
+          <div>
+            <label class="label">Tone</label>
+            <select id="scriptTone">
+              <option value="simple">Simple</option>
+              <option value="dramatic">Dramatic</option>
+              <option value="professional">Professional</option>
+              <option value="viral">Viral</option>
+            </select>
+          </div>
+          <div>
+            <label class="label">Language</label>
+            <select id="scriptLang">
+              <option value="English">English</option>
+              <option value="Burmese">Burmese</option>
+              <option value="English and Burmese">English and Burmese</option>
+            </select>
+          </div>
+        </div>
+        <div class="actions">
+          <button class="primary-btn" onclick="generateScript()">Generate Script</button>
+          <button class="secondary-btn" onclick="copyOutput('scriptOutput')">Copy Result</button>
+          <button class="ghost-btn" onclick="downloadText('script_output.txt', getText('scriptOutput'))">Download TXT</button>
+        </div>
+        <div id="scriptStatus" class="status">Topic ရေးပြီး Generate Script နှိပ်ပါ။</div>
+        <div id="scriptOutput" class="output">Script ဒီမှာပေါ်မယ်...</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Voice -->
+  <section id="voiceScreen" class="screen">
+    <div class="container">
+      <div class="screen-header">
+        <button class="pill-btn" onclick="goBack()">← Back</button>
+        <div class="title-wrap">
+          <h2>Gemini Burmese Voice</h2>
+          <p>Gemini TTS နဲ့ မြန်မာအသံထုတ်မယ်</p>
+        </div>
+      </div>
+      <div class="panel">
+        <label class="label">Text</label>
+        <textarea id="voiceInput" placeholder="မြန်မာစာထည့်ပါ"></textarea>
+        <div class="row" style="margin-top:12px;grid-template-columns:1fr 1fr;">
+          <div>
+            <label class="label">Model</label>
+            <select id="ttsModel">
+              <option value="gemini-2.5-pro-preview-tts">gemini-2.5-pro-preview-tts</option>
+              <option value="gemini-2.5-flash-preview-tts">gemini-2.5-flash-preview-tts</option>
+            </select>
+          </div>
+          <div>
+            <label class="label">Voice</label>
+            <select id="ttsVoice">
+              <option value="Kore">Kore</option>
+              <option value="Puck">Puck</option>
+              <option value="Aoede">Aoede</option>
+              <option value="Charon">Charon</option>
+              <option value="Fenrir">Fenrir</option>
+            </select>
+          </div>
+        </div>
+        <div class="actions">
+          <button class="primary-btn" onclick="generateVoice()">Generate AI Voice</button>
+          <button class="secondary-btn" onclick="playGeneratedAudio()">Play Again</button>
+          <button class="ghost-btn" onclick="downloadGeneratedAudio()">Download Audio</button>
+        </div>
+        <div id="voiceStatus" class="status">စာထည့်ပြီး Generate AI Voice နှိပ်ပါ။</div>
+        <div class="audio-wrap">
+          <div class="small">အသံမထွက်သေးရင် Generate ပြီးနောက် Play Again နှိပ်ပါ။</div>
+          <audio id="ttsPlayer" controls></audio>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Recap -->
+  <section id="recapScreen" class="screen">
+    <div class="container">
+      <div class="screen-header">
+        <button class="pill-btn" onclick="goBack()">← Back</button>
+        <div class="title-wrap">
+          <h2>Video Recap</h2>
+          <p>Transcript paste လုပ်ပြီး recap + Burmese translation ထုတ်ပေးမယ်</p>
+        </div>
+      </div>
+      <div class="panel">
+        <label class="label">Transcript / Script</label>
+        <textarea id="recapInput" placeholder="Transcript paste လုပ်ပါ"></textarea>
+        <div class="actions">
+          <button class="primary-btn" onclick="generateRecap()">Generate Recap</button>
+          <button class="secondary-btn" onclick="copyOutput('recapOutput')">Copy Result</button>
+          <button class="ghost-btn" onclick="downloadText('recap_output.txt', getText('recapOutput'))">Download TXT</button>
+        </div>
+        <div id="recapStatus" class="status">Transcript ထည့်ပြီး Generate Recap နှိပ်ပါ။</div>
+        <div id="recapOutput" class="output">Recap ဒီမှာပေါ်မယ်...</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Subtitle -->
+  <section id="subtitleScreen" class="screen">
+    <div class="container">
+      <div class="screen-header">
+        <button class="pill-btn" onclick="goBack()">← Back</button>
+        <div class="title-wrap">
+          <h2>Subtitle Generator</h2>
+          <p>Transcript ကနေ simple .srt ဖိုင်ထုတ်မယ်</p>
+        </div>
+      </div>
+      <div class="panel">
+        <label class="label">Transcript</label>
+        <textarea id="subtitleInput" placeholder="စာသားထည့်ပါ"></textarea>
+        <div class="actions">
+          <button class="primary-btn" onclick="generateSubtitle()">Generate SRT</button>
+          <button class="secondary-btn" onclick="copyOutput('subtitleOutput')">Copy Result</button>
+          <button class="ghost-btn" onclick="downloadText('subtitle_output.srt', getText('subtitleOutput'))">Download .SRT</button>
+        </div>
+        <div id="subtitleStatus" class="status">စာသားထည့်ပြီး Generate SRT နှိပ်ပါ။</div>
+        <div id="subtitleOutput" class="output">SRT ဒီမှာပေါ်မယ်...</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- YouTube -->
+  <section id="youtubeScreen" class="screen">
+    <div class="container">
+      <div class="screen-header">
+        <button class="pill-btn" onclick="goBack()">← Back</button>
+        <div class="title-wrap">
+          <h2>YouTube Helper</h2>
+          <p>Link + transcript paste လုပ်ပြီး recap / translate လုပ်နိုင်မယ်</p>
+        </div>
+      </div>
+      <div class="panel">
+        <label class="label">YouTube Link</label>
+        <input id="ytLink" placeholder="https://youtube.com/..." />
+        <label class="label" style="margin-top:12px">Transcript (optional)</label>
+        <textarea id="ytTranscript" placeholder="Transcript ရှိရင် paste လုပ်ပါ"></textarea>
+        <div class="actions">
+          <button class="primary-btn" onclick="analyzeYouTube()">Analyze</button>
+          <button class="secondary-btn" onclick="copyOutput('youtubeOutput')">Copy Result</button>
+          <button class="ghost-btn" onclick="downloadText('youtube_helper.txt', getText('youtubeOutput'))">Download TXT</button>
+        </div>
+        <div id="youtubeStatus" class="status">Link ထည့်ပြီး Analyze နှိပ်ပါ။</div>
+        <div id="youtubeOutput" class="output">Result ဒီမှာပေါ်မယ်...</div>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    const historyStack = ['homeScreen'];
+    let generatedAudioUrl = null;
+
+    function qs(id){ return document.getElementById(id); }
+    function getApiKey(){ return localStorage.getItem('gemini_api_key') || ''; }
+    function setStatus(id, msg, type='info'){
+      const el = qs(id);
+      el.textContent = msg;
+      el.className = 'status' + (type === 'success' ? ' success' : type === 'error' ? ' error' : '');
+    }
+    function getText(id){ return qs(id).textContent || ''; }
+
+    function showScreen(screenId, push=false){
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      qs(screenId).classList.add('active');
+      window.scrollTo({top:0, behavior:'smooth'});
+      if (push) {
+        historyStack.push(screenId);
+        try { window.history.pushState({screenId}, '', '#' + screenId); } catch(e) {}
+      }
+    }
+
+    function openTool(screenId){ showScreen(screenId, true); }
+    function goBack(){
+      if (historyStack.length > 1) historyStack.pop();
+      const prev = historyStack[historyStack.length - 1] || 'homeScreen';
+      showScreen(prev, false);
+    }
+
+    window.addEventListener('popstate', () => {
+      if (historyStack.length > 1) historyStack.pop();
+      const prev = historyStack[historyStack.length - 1] || 'homeScreen';
+      showScreen(prev, false);
+    });
+
+    function saveApiKey(){
+      const key = qs('apiKeyInput').value.trim();
+      if (!key) {
+        setStatus('homeStatus', 'API key မထည့်ရသေးပါ။', 'error');
+        return;
+      }
+      localStorage.setItem('gemini_api_key', key);
+      setStatus('homeStatus', 'API key သိမ်းပြီးပါပြီ။', 'success');
+    }
+
+    function loadApiKeyIntoInput(){
+      const key = getApiKey();
+      if (key) {
+        qs('apiKeyInput').value = key;
+        setStatus('homeStatus', 'သိမ်းထားတဲ့ API key ကိုပြန်ထည့်ထားပါတယ်။', 'success');
+      }
+    }
+
+    function startNow(){
+      const key = qs('apiKeyInput').value.trim() || getApiKey();
+      if (!key) {
+        setStatus('homeStatus', 'Start Now နှိပ်မီ API key ထည့်ပါ။', 'error');
+        return;
+      }
+      localStorage.setItem('gemini_api_key', key);
+      showScreen('toolsScreen', true);
+    }
+
+    async function geminiText(prompt){
+      const apiKey = getApiKey() || qs('apiKeyInput').value.trim();
+      if (!apiKey) throw new Error('API key မရှိသေးပါ။');
+      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error?.message || 'API error');
+      return data?.candidates?.[0]?.content?.parts?.[0]?.text || 'Result မရပါ။';
+    }
+
+    async function testAPI(){
+      try {
+        setStatus('homeStatus', 'API စမ်းနေပါတယ်...', 'info');
+        const result = await geminiText('Reply with: API connection successful.');
+        setStatus('homeStatus', result, 'success');
+      } catch (e) {
+        setStatus('homeStatus', 'API test failed: ' + e.message, 'error');
+      }
+    }
+
+    async function translateText(){
+      const input = qs('translateInput').value.trim();
+      if (!input) return setStatus('translateStatus', 'English text ထည့်ပါ။', 'error');
+      setStatus('translateStatus', 'ဘာသာပြန်နေပါတယ်...', 'info');
+      qs('translateOutput').textContent = 'Loading...';
+      try {
+        const prompt = `Translate the following English text into natural Burmese. Return only the Burmese translation.\n\nText:\n${input}`;
+        const result = await geminiText(prompt);
+        qs('translateOutput').textContent = result;
+        setStatus('translateStatus', 'ဘာသာပြန်ပြီးပါပြီ။', 'success');
+      } catch (e) {
+        qs('translateOutput').textContent = 'Error';
+        setStatus('translateStatus', e.message, 'error');
+      }
+    }
+
+    async function generateScript(){
+      const topic = qs('scriptTopic').value.trim();
+      const tone = qs('scriptTone').value;
+      const lang = qs('scriptLang').value;
+      if (!topic) return setStatus('scriptStatus', 'Topic ထည့်ပါ။', 'error');
+      setStatus('scriptStatus', 'Script ရေးနေပါတယ်...', 'info');
+      qs('scriptOutput').textContent = 'Loading...';
+      try {
+        const prompt = `Write a short, engaging video script about: ${topic}. Tone: ${tone}. Language: ${lang}. Make it easy to understand and usable for social media narration.`;
+        const result = await geminiText(prompt);
+        qs('scriptOutput').textContent = result;
+        setStatus('scriptStatus', 'Script ရေးပြီးပါပြီ။', 'success');
+      } catch (e) {
+        qs('scriptOutput').textContent = 'Error';
+        setStatus('scriptStatus', e.message, 'error');
+      }
+    }
+
+    async function generateRecap(){
+      const input = qs('recapInput').value.trim();
+      if (!input) return setStatus('recapStatus', 'Transcript ထည့်ပါ။', 'error');
+      setStatus('recapStatus', 'Recap ထုတ်နေပါတယ်...', 'info');
+      qs('recapOutput').textContent = 'Loading...';
+      try {
+        const prompt = `Analyze this transcript and return:\n1. Clean short English summary\n2. Burmese translation\n3. Very short Burmese recap\n\nTranscript:\n${input}`;
+        const result = await geminiText(prompt);
+        qs('recapOutput').textContent = result;
+        setStatus('recapStatus', 'Recap ပြီးပါပြီ။', 'success');
+      } catch (e) {
+        qs('recapOutput').textContent = 'Error';
+        setStatus('recapStatus', e.message, 'error');
+      }
+    }
+
+    function formatTime(seconds){
+      const h = Math.floor(seconds / 3600);
+      const m = Math.floor((seconds % 3600) / 60);
+      const s = Math.floor(seconds % 60);
+      const ms = '000';
+      return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')},${ms}`;
+    }
+
+    function generateSubtitle(){
+      const input = qs('subtitleInput').value.trim();
+      if (!input) return setStatus('subtitleStatus', 'စာသားထည့်ပါ။', 'error');
+      const lines = input.split(/\n+/).map(v => v.trim()).filter(Boolean);
+      let out = '';
+      let start = 0;
+      lines.forEach((line, i) => {
+        const end = start + 4;
+        out += `${i+1}\n${formatTime(start)} --> ${formatTime(end)}\n${line}\n\n`;
+        start = end + 1;
+      });
+      qs('subtitleOutput').textContent = out || 'SRT မထုတ်နိုင်ပါ။';
+      setStatus('subtitleStatus', 'SRT ထုတ်ပြီးပါပြီ။', 'success');
+    }
+
+    async function analyzeYouTube(){
+      const link = qs('ytLink').value.trim();
+      const transcript = qs('ytTranscript').value.trim();
+      if (!link) return setStatus('youtubeStatus', 'YouTube link ထည့်ပါ။', 'error');
+      setStatus('youtubeStatus', 'Analyze နေပါတယ်...', 'info');
+      qs('youtubeOutput').textContent = 'Loading...';
+      try {
+        const prompt = `YouTube link: ${link}\n\nTranscript (if any):\n${transcript || 'No transcript provided.'}\n\nPlease provide:\n1. Short explanation of what this video might be about based on the link/transcript\n2. Burmese translation if transcript exists\n3. Short recap in Burmese\n4. Mention if more transcript is needed for better accuracy.`;
+        const result = await geminiText(prompt);
+        qs('youtubeOutput').textContent = result;
+        setStatus('youtubeStatus', 'Analyze ပြီးပါပြီ။', 'success');
+      } catch (e) {
+        qs('youtubeOutput').textContent = 'Error';
+        setStatus('youtubeStatus', e.message, 'error');
+      }
+    }
+
+    async function generateVoice(){
+      const text = qs('voiceInput').value.trim();
+      const model = qs('ttsModel').value;
+      const voice = qs('ttsVoice').value;
+      if (!text) return setStatus('voiceStatus', 'အသံထုတ်မယ့်စာထည့်ပါ။', 'error');
+      const apiKey = getApiKey() || qs('apiKeyInput').value.trim();
+      if (!apiKey) return setStatus('voiceStatus', 'API key မရှိသေးပါ။', 'error');
+      setStatus('voiceStatus', 'AI voice ထုတ်နေပါတယ်...', 'info');
+      try {
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}` , {
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({
+            contents:[{parts:[{text:`Speak the following in Burmese.\n\n${text}`}]}],
+            generationConfig:{
+              responseModalities:["AUDIO"],
+              speechConfig:{voiceConfig:{prebuiltVoiceConfig:{voiceName:voice}}}
+            }
+          })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data?.error?.message || 'TTS error');
+
+        const parts = data?.candidates?.[0]?.content?.parts || [];
+        const audioPart = parts.find(p => p.inlineData && p.inlineData.data);
+        if (!audioPart) throw new Error('Audio data မရပါ။');
+        const mime = audioPart.inlineData.mimeType || 'audio/wav';
+        const base64 = audioPart.inlineData.data;
+        const bytes = Uint8Array.from(atob(base64), c => c.charCodeAt(0));
+        const blob = new Blob([bytes], {type:mime});
+        if (generatedAudioUrl) URL.revokeObjectURL(generatedAudioUrl);
+        generatedAudioUrl = URL.createObjectURL(blob);
+        const player = qs('ttsPlayer');
+        player.src = generatedAudioUrl;
+        await player.play().catch(()=>{});
+        setStatus('voiceStatus', 'AI voice ရပါပြီ။ Play Again သို့ Download Audio သုံးနိုင်ပါတယ်။', 'success');
+      } catch (e) {
+        setStatus('voiceStatus', e.message, 'error');
+      }
+    }
+
+    function playGeneratedAudio(){
+      const p = qs('ttsPlayer');
+      if (!p.src) return setStatus('voiceStatus', 'အရင် Generate AI Voice နှိပ်ပါ။', 'error');
+      p.play().then(()=>setStatus('voiceStatus','အသံဖွင့်နေပါတယ်။','success')).catch(err=>setStatus('voiceStatus', 'Play မရပါ: ' + err.message, 'error'));
+    }
+
+    function downloadGeneratedAudio(){
+      if (!generatedAudioUrl) return setStatus('voiceStatus', 'Download လုပ်ဖို့ audio မရှိသေးပါ။', 'error');
+      const a = document.createElement('a');
+      a.href = generatedAudioUrl;
+      a.download = 'gemini_burmese_voice.wav';
+      a.click();
+      setStatus('voiceStatus', 'Audio download စလိုက်ပါပြီ။', 'success');
+    }
+
+    function copyOutput(id){
+      const text = getText(id);
+      if (!text) return;
+      navigator.clipboard.writeText(text).catch(()=>{});
+    }
+
+    function downloadText(filename, text){
+      const blob = new Blob([text || ''], {type:'text/plain;charset=utf-8'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      a.click();
+      setTimeout(()=>URL.revokeObjectURL(url), 800);
+    }
+
+    loadApiKeyIntoInput();
+  </script>
+</body>
+</html>
